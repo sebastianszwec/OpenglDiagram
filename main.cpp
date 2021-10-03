@@ -11,13 +11,6 @@
 
 enum class AxisE { X_AXIS, Y_AXIS, NR_OF_AXIS };
 
-typedef struct Color
-{
-    GLfloat red;
-    GLfloat green;
-    GLfloat blue;
-} Color;
-
 void DrawAxis(bool printXAxisRuler, bool printYAxisRuler);
 void drawRuler(AxisE axis, GLfloat axisAdjustment);
 
@@ -59,11 +52,8 @@ int main(void)
     bool drawXAxisRuler = true;
     bool drawYAxisRuler = true;
 
-    CollatzConjecture collatzConjecture1(4, drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, SCREEN_WIDTH, SCREEN_HEIGHT, axisAdjustment);
-    CollatzConjecture collatzConjecture2(8, drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, SCREEN_WIDTH, SCREEN_HEIGHT, axisAdjustment);
-
-    std::cout << "drawXAxisRuler" << drawXAxisRuler << std::endl;
-    std::cout << "drawYAxisRuler" << drawYAxisRuler << std::endl;
+    CollatzConjecture collatzConjecture(4, drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, SCREEN_WIDTH, SCREEN_HEIGHT, axisAdjustment);
+    CollatzConjecture collatzConjecture1(7, drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, SCREEN_WIDTH, SCREEN_HEIGHT, axisAdjustment);
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
@@ -73,11 +63,13 @@ int main(void)
 
         // Render OpenGL here
         DrawAxis(drawXAxisRuler, drawYAxisRuler);
-
-        collatzConjecture1.RenderCollatzConjecture();
-        collatzConjecture2.RenderCollatzConjecture();
         
-        //debugLinesRenderer(16, 2);
+        collatzConjecture.RenderCollatzConjecture(axisXUnit, axisYUnit, 0.0f, 7.0f, 0.0f);
+        collatzConjecture1.RenderCollatzConjecture(axisXUnit, axisYUnit, 0.0f, 0.5f, 0.5f);
+
+        int val = 1;
+        debugLinesRenderer(val, collatzConjecture1.collatzVec.at(val - 1));
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -163,6 +155,8 @@ void drawRuler(AxisE axis, GLfloat axisAdjustment)
 
 void debugLinesRenderer(int collatzTableIndex, int posY)
 {
+    glColor3f(1.0f, 0.0f, 0.0f);
+
     GLfloat y[] =
     {
         0, axisAdjustment + axisYUnit * posY,
@@ -184,4 +178,5 @@ void debugLinesRenderer(int collatzTableIndex, int posY)
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, x);
     glDrawArrays(GL_LINES, 0, 2);
+    glColor3f(1.0f, 1.0f, 1.0f);
 }

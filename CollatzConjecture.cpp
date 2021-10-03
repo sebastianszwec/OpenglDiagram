@@ -1,17 +1,18 @@
 #include "CollatzConjecture.h"
 
 CollatzConjecture::CollatzConjecture(int collatzNumber, bool& drawXAxisRuler, bool& drawYAxisRuler, GLfloat& xUnit, GLfloat& yUnit, int screenWidth, int screenHeight, GLfloat asixAdj)
-    : numberOfEntries(0), collatzTable(), currFillIndex(1), currentWriteIndex(0), axisXUnit(xUnit), axisYUnit(yUnit), axisAdjustment(asixAdj)
+    : numberOfEntries(0), currFillIndex(1), currentWriteIndex(0), xUnit(xUnit), yUnit(yUnit), axisAdjustment(asixAdj)
 {
     CollatzConjectureFillTable(collatzNumber);
-    AdjustAxisUnits(drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, screenWidth, screenHeight);
+    AdjustAxisUnits(drawXAxisRuler, drawYAxisRuler, xUnit, yUnit, screenWidth, screenHeight);
 }
 
 int CollatzConjecture::CollatzConjectureFillTable(int n)
 {
     std::cout << "(" << CollatzConjecture::currFillIndex << ", " << n << ")" << std::endl;
 
-    CollatzConjecture::collatzTable[CollatzConjecture::currFillIndex] = n;
+    collatzVec.push_back(n);
+
     CollatzConjecture::currFillIndex++;
     CollatzConjecture::numberOfEntries++;
 
@@ -30,19 +31,21 @@ int CollatzConjecture::CollatzConjectureFillTable(int n)
     }
 }
 
-void CollatzConjecture::RenderCollatzConjecture()
+void CollatzConjecture::RenderCollatzConjecture(GLfloat currentAxisXUnit, GLfloat currentAxisYUnit, GLfloat red, GLfloat green, GLfloat blue)
 {
     GLfloat initPosX = CollatzConjecture::axisAdjustment;
     GLfloat initPosY = CollatzConjecture::axisAdjustment;
     GLfloat posX[2];
     GLfloat posY[2];
 
+    glColor3f(red, green, blue);
+
     for (int collatzTableIdx = 1; collatzTableIdx <= CollatzConjecture::numberOfEntries; ++collatzTableIdx)
     {
         GLfloat point[] =
         {
-           CollatzConjecture::axisAdjustment + (CollatzConjecture::axisXUnit * collatzTableIdx),
-           CollatzConjecture::axisAdjustment + CollatzConjecture::collatzTable[collatzTableIdx] * CollatzConjecture::axisYUnit
+           CollatzConjecture::axisAdjustment + (currentAxisXUnit * collatzTableIdx),
+           CollatzConjecture::axisAdjustment + collatzVec.at(collatzTableIdx - 1) * currentAxisYUnit
         };
 
         glPointSize(3.0f);
@@ -55,10 +58,10 @@ void CollatzConjecture::RenderCollatzConjecture()
         //do not print last line to x 0
         if (collatzTableIdx == CollatzConjecture::numberOfEntries) break;
 
-        posX[0] = CollatzConjecture::axisAdjustment + (collatzTableIdx) * CollatzConjecture::axisXUnit;
-        posY[0] = CollatzConjecture::axisAdjustment + CollatzConjecture::collatzTable[collatzTableIdx] * CollatzConjecture::axisYUnit;
-        posX[1] = CollatzConjecture::axisAdjustment + (collatzTableIdx + 1) * CollatzConjecture::axisXUnit;
-        posY[1] = CollatzConjecture::axisAdjustment + CollatzConjecture::collatzTable[collatzTableIdx + 1] * CollatzConjecture::axisYUnit;
+        posX[0] = CollatzConjecture::axisAdjustment + (collatzTableIdx) *currentAxisXUnit;
+        posY[0] = CollatzConjecture::axisAdjustment + collatzVec.at(collatzTableIdx - 1) * currentAxisYUnit;
+        posX[1] = CollatzConjecture::axisAdjustment + (collatzTableIdx + 1) * currentAxisXUnit;
+        posY[1] = CollatzConjecture::axisAdjustment + collatzVec.at(collatzTableIdx) * currentAxisYUnit;
 
         GLfloat line[] =
         {
@@ -72,29 +75,33 @@ void CollatzConjecture::RenderCollatzConjecture()
         glVertexPointer(2, GL_FLOAT, 0, line);
         glDrawArrays(GL_LINES, 0, 2);
     }
+
+    glColor3f(1.0f, 1.0f, 1.0f);
 }
 
 void CollatzConjecture::AdjustAxisUnits(bool& drawXAxisRuler, bool& drawYAxisRuler, GLfloat& xUnit, GLfloat &yUnit, int screenWidth, int screenHeight)
 {
-    unsigned largestYNumber = 0;
+    int largestYNumber = 0;
     for (int i = 0; i < CollatzConjecture::numberOfEntries; ++i)
     {
-        if (CollatzConjecture::collatzTable[i] > largestYNumber)
+        if (collatzVec.at(i) > largestYNumber)
         {
-            largestYNumber = CollatzConjecture::collatzTable[i];
+            largestYNumber = collatzVec.at(i);
             std::cout << "largestNumber=" << largestYNumber << std::endl;
         }
     }
 
     if (largestYNumber > screenHeight / yUnit)
     {
-        yUnit = ((screenHeight - screenHeight * 0.04) / (GLfloat)largestYNumber);
+        CollatzConjecture::yUnit = ((GLfloat)(screenHeight - screenHeight * 0.04) / (GLfloat)largestYNumber);
+        yUnit = CollatzConjecture::yUnit;
         if (yUnit < 3.0f) drawYAxisRuler = false;
     }
 
     if (CollatzConjecture::numberOfEntries > screenWidth / xUnit)
     {
-        xUnit = (GLfloat)(screenWidth / CollatzConjecture::numberOfEntries);
+        CollatzConjecture::xUnit = (GLfloat)(screenWidth / CollatzConjecture::numberOfEntries);
+        xUnit = CollatzConjecture::xUnit;
         if (xUnit < 3.0f) drawYAxisRuler = false;
     }
 }
