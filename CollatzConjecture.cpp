@@ -1,5 +1,12 @@
 #include "CollatzConjecture.h"
 
+CollatzConjecture::CollatzConjecture(int collatzNumber, bool& drawXAxisRuler, bool& drawYAxisRuler, GLfloat& xUnit, GLfloat& yUnit, int screenWidth, int screenHeight, GLfloat asixAdj)
+    : numberOfEntries(0), collatzTable(), currFillIndex(1), currentWriteIndex(0), axisXUnit(xUnit), axisYUnit(yUnit), axisAdjustment(asixAdj)
+{
+    CollatzConjectureFillTable(collatzNumber);
+    AdjustAxisUnits(drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, screenWidth, screenHeight);
+}
+
 int CollatzConjecture::CollatzConjectureFillTable(int n)
 {
     std::cout << "(" << CollatzConjecture::currFillIndex << ", " << n << ")" << std::endl;
@@ -23,19 +30,19 @@ int CollatzConjecture::CollatzConjectureFillTable(int n)
     }
 }
 
-void CollatzConjecture::RenderCollatzConjecture(GLfloat* axisXUnit, GLfloat* axisYUnit, const GLfloat axisAdjustment)
+void CollatzConjecture::RenderCollatzConjecture()
 {
-    GLfloat initPosX = (GLfloat)axisAdjustment;
-    GLfloat initPosY = (GLfloat)axisAdjustment;
+    GLfloat initPosX = CollatzConjecture::axisAdjustment;
+    GLfloat initPosY = CollatzConjecture::axisAdjustment;
     GLfloat posX[2];
     GLfloat posY[2];
 
-    for (int i = 1; i <= CollatzConjecture::numberOfEntries; ++i)
+    for (int collatzTableIdx = 1; collatzTableIdx <= CollatzConjecture::numberOfEntries; ++collatzTableIdx)
     {
         GLfloat point[] =
         {
-            axisAdjustment + (*axisXUnit * i),
-            axisAdjustment + CollatzConjecture::collatzTable[i] * *axisYUnit
+           CollatzConjecture::axisAdjustment + (CollatzConjecture::axisXUnit * collatzTableIdx),
+           CollatzConjecture::axisAdjustment + CollatzConjecture::collatzTable[collatzTableIdx] * CollatzConjecture::axisYUnit
         };
 
         glPointSize(3.0f);
@@ -45,13 +52,13 @@ void CollatzConjecture::RenderCollatzConjecture(GLfloat* axisXUnit, GLfloat* axi
 
         CollatzConjecture::currentWriteIndex++;
 
-        //do not print last line
-        if (i == CollatzConjecture::numberOfEntries) break;
+        //do not print last line to x 0
+        if (collatzTableIdx == CollatzConjecture::numberOfEntries) break;
 
-        posX[0] = axisAdjustment + (i) * *axisXUnit;
-        posY[0] = axisAdjustment + CollatzConjecture::collatzTable[i] * *axisYUnit;
-        posX[1] = axisAdjustment + (i + 1) * *axisXUnit;
-        posY[1] = axisAdjustment + CollatzConjecture::collatzTable[i + 1] * *axisYUnit;
+        posX[0] = CollatzConjecture::axisAdjustment + (collatzTableIdx) * CollatzConjecture::axisXUnit;
+        posY[0] = CollatzConjecture::axisAdjustment + CollatzConjecture::collatzTable[collatzTableIdx] * CollatzConjecture::axisYUnit;
+        posX[1] = CollatzConjecture::axisAdjustment + (collatzTableIdx + 1) * CollatzConjecture::axisXUnit;
+        posY[1] = CollatzConjecture::axisAdjustment + CollatzConjecture::collatzTable[collatzTableIdx + 1] * CollatzConjecture::axisYUnit;
 
         GLfloat line[] =
         {
@@ -64,5 +71,30 @@ void CollatzConjecture::RenderCollatzConjecture(GLfloat* axisXUnit, GLfloat* axi
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(2, GL_FLOAT, 0, line);
         glDrawArrays(GL_LINES, 0, 2);
+    }
+}
+
+void CollatzConjecture::AdjustAxisUnits(bool& drawXAxisRuler, bool& drawYAxisRuler, GLfloat& xUnit, GLfloat &yUnit, int screenWidth, int screenHeight)
+{
+    unsigned largestYNumber = 0;
+    for (int i = 0; i < CollatzConjecture::numberOfEntries; ++i)
+    {
+        if (CollatzConjecture::collatzTable[i] > largestYNumber)
+        {
+            largestYNumber = CollatzConjecture::collatzTable[i];
+            std::cout << "largestNumber=" << largestYNumber << std::endl;
+        }
+    }
+
+    if (largestYNumber > screenHeight / yUnit)
+    {
+        yUnit = ((screenHeight - screenHeight * 0.04) / (GLfloat)largestYNumber);
+        if (yUnit < 3.0f) drawYAxisRuler = false;
+    }
+
+    if (CollatzConjecture::numberOfEntries > screenWidth / xUnit)
+    {
+        xUnit = (GLfloat)(screenWidth / CollatzConjecture::numberOfEntries);
+        if (xUnit < 3.0f) drawYAxisRuler = false;
     }
 }

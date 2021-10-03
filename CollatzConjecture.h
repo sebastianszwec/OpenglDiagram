@@ -8,15 +8,20 @@
 class CollatzConjecture
 {
 public:
+	GLfloat axisXUnit;
+	GLfloat axisYUnit;
+	GLfloat axisAdjustment;
+
+private:
 	int numberOfEntries;
 	unsigned int collatzTable[1000];
 	int currFillIndex;
 	int currentWriteIndex;
 
-	CollatzConjecture()
-		: numberOfEntries(0), collatzTable(), currFillIndex(1), currentWriteIndex(0)
-	{}
+public:
+	CollatzConjecture(int collatzNumber, bool& drawXAxisRuler, bool& drawYAxisRuler, GLfloat& xUnit, GLfloat& yUnit, int screenWidth, int screenHeight, GLfloat asixAdj);
 
 	int CollatzConjectureFillTable(int n);
-	void RenderCollatzConjecture(GLfloat* axisXUnit, GLfloat* axisYUnit, const GLfloat axisAdjustment);
+	void RenderCollatzConjecture();
+	void AdjustAxisUnits(bool& drawXAxisRuler, bool& drawYAxisRuler, GLfloat& xUnit, GLfloat& yUnit, int screenWidth, int screenHeight);
 };

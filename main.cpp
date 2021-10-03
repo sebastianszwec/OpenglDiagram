@@ -11,13 +11,15 @@
 
 enum class AxisE { X_AXIS, Y_AXIS, NR_OF_AXIS };
 
-typedef unsigned DrawRulerDecisionBitmap;
-#define DRAW_RULER_X_AXIS 0
-#define DRAW_RULER_Y_AXIS 1
+typedef struct Color
+{
+    GLfloat red;
+    GLfloat green;
+    GLfloat blue;
+} Color;
 
 void DrawAxis(bool printXAxisRuler, bool printYAxisRuler);
 void drawRuler(AxisE axis, GLfloat axisAdjustment);
-void adjustAxisUnits(CollatzConjecture cc, bool& drawXAxisRuler, bool& drawYAxisRuler);
 
 void debugLinesRenderer(int collatzTableIndex, int posY);
 
@@ -54,12 +56,11 @@ int main(void)
     glMatrixMode(GL_MODELVIEW); // (default matrix mode) modelview matrix defines how your objects are transformed (meaning translation, rotation and scaling) in your world
     glLoadIdentity(); // same as above comment
 
-    CollatzConjecture collatzConjecture;
     bool drawXAxisRuler = true;
     bool drawYAxisRuler = true;
-    const int collatzNumber = 19;
-    collatzConjecture.CollatzConjectureFillTable(collatzNumber);
-    adjustAxisUnits(collatzConjecture, drawXAxisRuler, drawYAxisRuler);
+
+    CollatzConjecture collatzConjecture1(4, drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, SCREEN_WIDTH, SCREEN_HEIGHT, axisAdjustment);
+    CollatzConjecture collatzConjecture2(8, drawXAxisRuler, drawYAxisRuler, axisXUnit, axisYUnit, SCREEN_WIDTH, SCREEN_HEIGHT, axisAdjustment);
 
     std::cout << "drawXAxisRuler" << drawXAxisRuler << std::endl;
     std::cout << "drawYAxisRuler" << drawYAxisRuler << std::endl;
@@ -72,7 +73,9 @@ int main(void)
 
         // Render OpenGL here
         DrawAxis(drawXAxisRuler, drawYAxisRuler);
-        collatzConjecture.RenderCollatzConjecture(&axisXUnit, &axisYUnit, axisAdjustment);
+
+        collatzConjecture1.RenderCollatzConjecture();
+        collatzConjecture2.RenderCollatzConjecture();
         
         //debugLinesRenderer(16, 2);
         glfwSwapBuffers(window);
@@ -181,29 +184,4 @@ void debugLinesRenderer(int collatzTableIndex, int posY)
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, x);
     glDrawArrays(GL_LINES, 0, 2);
-}
-
-void adjustAxisUnits(CollatzConjecture cc, bool& drawXAxisRuler, bool& drawYAxisRuler)
-{
-    unsigned largestYNumber = 0;
-    for (int i = 0; i < cc.numberOfEntries; ++i)
-    {
-        if (cc.collatzTable[i] > largestYNumber)
-        {
-            largestYNumber = cc.collatzTable[i];
-            std::cout << "largestNumber=" << largestYNumber << std::endl;
-        }
-    }
-
-    if (largestYNumber > SCREEN_HEIGHT / axisYUnit)
-    {
-        axisYUnit = ((SCREEN_HEIGHT - SCREEN_HEIGHT * 0.04) / (GLfloat)largestYNumber);
-        if (axisYUnit < 3.0f) drawYAxisRuler = false;
-    }
-
-    if (cc.numberOfEntries > SCREEN_WIDTH / axisXUnit)
-    {
-        axisXUnit = (GLfloat)(SCREEN_WIDTH / cc.numberOfEntries);
-        if (axisXUnit < 3.0f) drawYAxisRuler = false;
-    }
 }
